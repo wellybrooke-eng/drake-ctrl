@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>DRAKE//CTRL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;800&family=Oswald:wght@400;600;700&display=swap');
+
+  :root {
+    --bg: #080a0c;
+    --panel: #0e1214;
+    --panel2: #121618;
+    --border: #222a30;
+    --steel: #4a5560;
+    --accent: #c8d4d8;
+    --accent-warm: #d4a055;
+    --green: #7ab87a;
+    --text: #7a8890;
+    --text-bright: #c0ccd0;
+    --danger: #cc3333;
+    --glow-steel: 0 0 10px rgba(200,212,216,0.12);
+    --glow-amber: 0 0 8px rgba(212,160,85,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  /* Steel plate CSS background — no image needed */
+  body {
+    background-image:
+      repeating-linear-gradient(90deg, transparent 0px, transparent 40px, rgba(255,255,255,0.006) 40px, rgba(255,255,255,0.006) 41px),
+      repeating-linear-gradient(0deg,  transparent 0px, transparent 40px, rgba(255,255,255,0.006) 40px, rgba(255,255,255,0.006) 41px),
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 8px),
+      linear-gradient(160deg, #0d1014 0%, #090c0e 40%, #0b0e11 100%);
+  }
+
+  /* Scanlines */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none; z-index: 100;
+  }
+
+  /* Vignette */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none; z-index: 99;
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: 175px 1fr;
+    height: 100vh;
+    padding: 8px; gap: 7px;
+    position: relative; z-index: 1;
+  }
+
+  .rivet {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #555, #1a1a1a);
+    border: 1px solid #0a0a0a;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.12), 0 1px 3px rgba(0,0,0,0.9);
+    position: absolute;
+  }
+
+  /* ══ LEFT ══ */
+  .left-panel { display: flex; flex-direction: column; gap: 7px; }
+
+  .drake-logo-block {
+    background: #0c0f12;
+    border: 1px solid var(--border); border-top: 3px solid #282e34;
+    padding: 10px 8px 8px; position: relative; flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .drake-logo-block .rivet:nth-child(1) { top: 4px; left: 4px; }
+  .drake-logo-block .rivet:nth-child(2) { top: 4px; right: 4px; }
+  .drake-logo-block .rivet:nth-child(3) { bottom: 4px; left: 4px; }
+  .drake-logo-block .rivet:nth-child(4) { bottom: 4px; right: 4px; }
+
+  .drake-logo-svg { width: 100%; max-width: 145px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.06)); }
+
+  .drake-tagline {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 7px; font-weight: 600; letter-spacing: 3px;
+    color: var(--steel); text-transform: uppercase; text-align: center;
+    border-top: 1px solid var(--border); padding-top: 4px; width: 100%;
+  }
+
+  .clock-block {
+    background: var(--panel); border: 1px solid var(--border);
+    border-top: 2px solid var(--steel);
+    padding: 10px 10px 8px; position: relative; flex-shrink: 0;
+  }
+
+  .block-label {
+    position: absolute; top: -1px; left: 8px;
+    font-size: 7px; letter-spacing: 2px;
+    background: var(--panel); padding: 0 4px;
+    color: var(--steel); text-transform: uppercase;
+  }
+
+  .time {
+    font-family: 'Oswald', sans-serif; font-size: 30px; font-weight: 700;
+    color: var(--accent); text-shadow: var(--glow-steel);
+    letter-spacing: 3px; line-height: 1;
+  }
+  .day {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+    color: var(--accent-warm); letter-spacing: 3px; margin-top: 3px; text-shadow: var(--glow-amber);
+  }
+  .date { font-size: 8px; color: var(--text); letter-spacing: 1px; margin-top: 1px; opacity: 0.6; }
+
+  .status-block {
+    background: var(--panel); border: 1px solid var(--border);
+    border-top: 2px solid #2a3038;
+    padding: 10px 8px 8px; position: relative; flex-shrink: 0;
+  }
+
+  .status-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 3px 0; border-bottom: 1px solid rgba(34,42,48,0.7);
+    font-size: 8px; letter-spacing: 1px;
+  }
+  .status-row:last-child { border-bottom: none; }
+  .status-label { color: var(--steel); opacity: 0.8; }
+  .status-val { color: var(--green); font-size: 8px; }
+  .status-val.warn { color: var(--accent-warm); }
+  .status-val.err { color: var(--danger); }
+
+  .ping-dot {
+    display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 5px var(--green);
+    animation: pulse 2.5s infinite; margin-right: 3px; vertical-align: middle;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.15} }
+
+  /* MATRIX BLOCK */
+  .matrix-block {
+    background: var(--panel); border: 1px solid var(--border);
+    border-top: 2px solid rgba(0,140,60,0.35);
+    position: relative; flex: 1; overflow: hidden; min-height: 0;
+  }
+  .matrix-block .block-label {
+    color: rgba(0,180,80,0.55);
+    background: var(--panel);
+    z-index: 2; position: absolute;
+  }
+  #matrixCanvas { width: 100%; height: 100%; display: block; }
+
+  /* ══ RIGHT ══ */
+  .right-panel { display: flex; flex-direction: column; gap: 7px; }
+
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--panel); border: 1px solid var(--border);
+    border-left: 4px solid var(--steel);
+    padding: 5px 10px; position: relative; flex-shrink: 0;
+  }
+  .panel-header .rivet:nth-child(1) { top: 4px; right: 6px; }
+
+  .panel-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800;
+    color: var(--accent); letter-spacing: 5px; text-transform: uppercase;
+    text-shadow: var(--glow-steel);
+  }
+  .panel-sub { font-size: 7px; color: var(--steel); opacity: 0.6; letter-spacing: 2px; }
+
+  .button-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 5px; flex: 1;
+  }
+
+  .macro-btn {
+    background: var(--panel2); border: 1px solid var(--border);
+    border-bottom: 2px solid #050708;
+    padding: 0 10px; cursor: pointer;
+    display: flex; flex-direction: column; justify-content: center; gap: 2px;
+    position: relative; overflow: hidden;
+    transition: all 0.1s ease;
+    -webkit-tap-highlight-color: transparent; user-select: none;
+  }
+
+  /* Steel sheen */
+  .macro-btn::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 45%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.022) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  /* Accent stripe */
+  .macro-btn::after {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--steel);
+  }
+  .macro-btn:nth-child(2n)::after { background: var(--accent-warm); }
+
+  .macro-btn:active {
+    transform: scale(0.97) translateY(1px);
+    background: #181e22; border-bottom-width: 1px;
+  }
+
+  @keyframes btnFlash {
+    0%   { background: rgba(200,212,216,0.13); }
+    100% { background: var(--panel2); }
+  }
+  .macro-btn.triggered { animation: btnFlash 0.35s ease-out forwards; }
+
+  .btn-id   { font-size: 7px; color: var(--steel); letter-spacing: 2px; opacity: 0.7; }
+  .btn-label {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700;
+    color: var(--text-bright); letter-spacing: 1px; text-transform: uppercase; line-height: 1;
+  }
+  .btn-desc { font-size: 7px; color: var(--steel); opacity: 0.5; letter-spacing: 1px; }
+
+  .config-bar {
+    background: #090b0d; border: 1px solid var(--border);
+    padding: 4px 10px; font-size: 7.5px; color: var(--steel); letter-spacing: 1px;
+    display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+  }
+  .config-bar .ip { color: var(--accent-warm); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="left-panel">
+
+    <div class="drake-logo-block">
+      <span class="rivet"></span><span class="rivet"></span>
+      <span class="rivet"></span><span class="rivet"></span>
+      <svg class="drake-logo-svg" viewBox="0 0 300 110" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sg" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   style="stop-color:#ffffff;stop-opacity:1"/>
+            <stop offset="40%"  style="stop-color:#d0d8dc;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#8a9aa0;stop-opacity:1"/>
+          </linearGradient>
+          <linearGradient id="bg2" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   style="stop-color:#484848;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#1a1a1a;stop-opacity:1"/>
+          </linearGradient>
+        </defs>
+        <text x="150" y="52"
+          font-family="Barlow Condensed,Arial Narrow,sans-serif"
+          font-size="58" font-weight="800"
+          fill="url(#sg)" text-anchor="middle" letter-spacing="6">DRAKE</text>
+        <rect x="8" y="60" width="284" height="24" fill="url(#bg2)" rx="1"/>
+        <rect x="8" y="60" width="284" height="1" fill="rgba(255,255,255,0.12)"/>
+        <text x="150" y="77"
+          font-family="Barlow Condensed,Arial Narrow,sans-serif"
+          font-size="16" font-weight="700"
+          fill="#c8d0d4" text-anchor="middle" letter-spacing="5">INTERPLANETARY</text>
+        <rect x="8"   y="56" width="40" height="2" fill="rgba(255,255,255,0.18)"/>
+        <rect x="252" y="56" width="40" height="2" fill="rgba(255,255,255,0.18)"/>
+      </svg>
+      <div class="drake-tagline">COMMAND INTERFACE</div>
+    </div>
+
+    <div class="clock-block">
+      <div class="block-label">SYS//TIME</div>
+      <div class="time" id="clock">00:00:00</div>
+      <div class="day"  id="day">---</div>
+      <div class="date" id="date">----/--/--</div>
+    </div>
+
+    <div class="status-block">
+      <div class="block-label">SYS//STATUS</div>
+      <div class="status-row"><span class="status-label">NODE</span><span class="status-val"><span class="ping-dot"></span>LIVE</span></div>
+      <div class="status-row"><span class="status-label">PC</span><span class="status-val" id="pc-status">LINKED</span></div>
+      <div class="status-row"><span class="status-label">NET</span><span class="status-val">LOCAL</span></div>
+      <div class="status-row"><span class="status-label">CMDS</span><span class="status-val" id="cmd-count">0</span></div>
+      <div class="status-row"><span class="status-label">LAST</span><span class="status-val warn" id="last-cmd">—</span></div>
+    </div>
+
+    <div class="matrix-block">
+      <div class="block-label">DATA//STREAM</div>
+      <canvas id="matrixCanvas"></canvas>
+    </div>
+
+  </div>
+
+  <div class="right-panel">
+    <div class="panel-header">
+      <span class="rivet"></span>
+      <div class="panel-title">DRAKE // CTRL</div>
+      <div class="panel-sub">8 NODES ACTIVE</div>
+    </div>
+    <div class="button-grid" id="btnGrid"></div>
+    <div class="config-bar">
+      <span>TARGET <span class="ip" id="ip-display">192.168.1.x:8765</span></span>
+      <span>EDIT drake-ctrl-lite.html TO CONFIGURE</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────
+const PC_HOST = "192.168.1.x";  // ← CHANGE THIS
+const PC_PORT = 8765;
+
+const BUTTONS = [
+  { id:"M01", label:"COPILOT",  desc:"microsoft copilot", action:"launch", cmd:"copilot"  },
+  { id:"M02", label:"OUTLOOK",  desc:"open mail",         action:"launch", cmd:"outlook"  },
+  { id:"M03", label:"TEAMS",    desc:"open teams",        action:"launch", cmd:"teams"    },
+  { id:"M04", label:"CLAUDE",   desc:"open claude.ai",    action:"launch", cmd:"claude"   },
+  { id:"M05", label:"VOL UP",   desc:"volume +10",        action:"ahk",    cmd:"volup"    },
+  { id:"M06", label:"VOL DOWN", desc:"volume -10",        action:"ahk",    cmd:"voldown"  },
+  { id:"M07", label:"ITUNES",   desc:"open itunes",       action:"launch", cmd:"itunes"   },
+  { id:"M08", label:"HELP",     desc:"open help doc",     action:"ahk",    cmd:"help"     },
+];
+// ────────────────────────────────────────────────────────────────
+
+document.getElementById('ip-display').textContent = `${PC_HOST}:${PC_PORT}`;
+
+// Clock
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    [now.getHours(),now.getMinutes(),now.getSeconds()]
+    .map(n=>String(n).padStart(2,'0')).join(':');
+  document.getElementById('day').textContent =
+    ['SUN','MON','TUE','WED','THU','FRI','SAT'][now.getDay()];
+  document.getElementById('date').textContent =
+    `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+}
+setInterval(updateClock,1000); updateClock();
+
+// Send command
+let cmdCount = 0;
+async function sendCommand(cmd, label) {
+  try {
+    await fetch(`http://${PC_HOST}:${PC_PORT}/?cmd=${encodeURIComponent(cmd)}`,
+      {method:'GET', mode:'no-cors'});
+    cmdCount++;
+    document.getElementById('cmd-count').textContent = cmdCount;
+    document.getElementById('last-cmd').textContent = label;
+  } catch(e) {
+    document.getElementById('pc-status').textContent = 'ERR';
+    document.getElementById('pc-status').className = 'status-val err';
+  }
+}
+
+// Build buttons
+document.getElementById('btnGrid').innerHTML = '';
+BUTTONS.forEach(btn => {
+  const el = document.createElement('button');
+  el.className = 'macro-btn';
+  el.innerHTML = `
+    <div class="btn-id">${btn.id} // ${btn.action.toUpperCase()}</div>
+    <div class="btn-label">${btn.label}</div>
+    <div class="btn-desc">${btn.desc}</div>`;
+  el.addEventListener('click', () => {
+    el.classList.remove('triggered');
+    void el.offsetWidth;
+    el.classList.add('triggered');
+    sendCommand(btn.cmd, btn.label);
+    setTimeout(()=>el.classList.remove('triggered'), 350);
+  });
+  document.getElementById('btnGrid').appendChild(el);
+});
+
+// ══ MATRIX RAIN ══════════════════════════════════════════════════
+const canvas = document.getElementById('matrixCanvas');
+const ctx    = canvas.getContext('2d');
+const block  = canvas.parentElement;
+
+function resize() {
+  canvas.width  = block.clientWidth;
+  canvas.height = block.clientHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const chars = 'ｦｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789ABCDEF><=/|'.split('');
+const FS = 9;
+let cols, drops, colors;
+
+function initMatrix() {
+  cols   = Math.floor(canvas.width / FS);
+  drops  = Array.from({length:cols}, ()=> Math.random() * -60);
+  colors = Array.from({length:cols}, ()=> {
+    const g = 120 + Math.floor(Math.random()*100);
+    return `rgb(0,${g},${Math.floor(g*0.25)})`;
+  });
+}
+initMatrix();
+window.addEventListener('resize', initMatrix);
+
+function draw() {
+  ctx.fillStyle = 'rgba(0,0,0,0.052)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.font = FS + 'px monospace';
+  for (let i=0; i<cols; i++) {
+    const x = i*FS, y = drops[i]*FS;
+    // bright head
+    ctx.fillStyle = '#d0ffdc';
+    ctx.fillText(chars[Math.floor(Math.random()*chars.length)], x, y);
+    // trail
+    ctx.fillStyle = colors[i];
+    ctx.fillText(chars[Math.floor(Math.random()*chars.length)], x, y-FS);
+    if (y > canvas.height && Math.random() > 0.972) drops[i] = 0;
+    drops[i] += 0.55;
+  }
+}
+setInterval(draw, 42);
+</script>
+</body>
+</html>
