@@ -60,9 +60,9 @@
 
   .container {
     display: grid;
-    grid-template-columns: 175px 1fr;
+    grid-template-columns: 155px 1fr;
     height: 100vh;
-    padding: 8px; gap: 7px;
+    padding: 5px; gap: 5px;
     position: relative; z-index: 1;
   }
 
@@ -75,7 +75,7 @@
   }
 
   /* ══ LEFT ══ */
-  .left-panel { display: flex; flex-direction: column; gap: 7px; }
+  .left-panel { display: flex; flex-direction: column; gap: 4px; }
 
   .drake-logo-block {
     background: #0c0f12;
@@ -159,7 +159,7 @@
   #matrixCanvas { width: 100%; height: 100%; display: block; }
 
   /* ══ RIGHT ══ */
-  .right-panel { display: flex; flex-direction: column; gap: 7px; }
+  .right-panel { display: flex; flex-direction: column; gap: 4px; }
 
   .panel-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -179,14 +179,14 @@
   .button-grid {
     display: grid; grid-template-columns: 1fr 1fr;
     grid-template-rows: repeat(4, 1fr);
-    gap: 5px; flex: 1;
+    gap: 3px; flex: 1;
   }
 
   .macro-btn {
     background: var(--panel2); border: 1px solid var(--border);
     border-bottom: 2px solid #050708;
-    padding: 0 10px; cursor: pointer;
-    display: flex; flex-direction: column; justify-content: center; gap: 2px;
+    padding: 0 6px; cursor: pointer;
+    display: flex; flex-direction: column; justify-content: center; gap: 1px;
     position: relative; overflow: hidden;
     transition: all 0.1s ease;
     -webkit-tap-highlight-color: transparent; user-select: none;
@@ -216,12 +216,12 @@
   }
   .macro-btn.triggered { animation: btnFlash 0.35s ease-out forwards; }
 
-  .btn-id   { font-size: 7px; color: var(--steel); letter-spacing: 2px; opacity: 0.7; }
+  .btn-id   { font-size: 6px; color: var(--steel); letter-spacing: 1px; opacity: 0.7; }
   .btn-label {
-    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
     color: var(--text-bright); letter-spacing: 1px; text-transform: uppercase; line-height: 1;
   }
-  .btn-desc { font-size: 7px; color: var(--steel); opacity: 0.5; letter-spacing: 1px; }
+  .btn-desc { font-size: 6px; color: var(--steel); opacity: 0.5; letter-spacing: 1px; }
 
   .config-bar {
     background: #090b0d; border: 1px solid var(--border);
@@ -229,9 +229,31 @@
     display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
   }
   .config-bar .ip { color: var(--accent-warm); }
+
+  /* Fullscreen button — sits over the UI, fades out when fullscreen active */
+  #fs-btn {
+    position: fixed;
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 200;
+    background: rgba(14,18,22,0.92);
+    border: 1px solid var(--steel);
+    border-bottom: 2px solid #050708;
+    color: var(--accent-warm);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 3px;
+    padding: 5px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: opacity 0.4s;
+  }
+  #fs-btn:active { opacity: 0.5; }
+  #fs-btn.hidden { opacity: 0; pointer-events: none; }
 </style>
 </head>
 <body>
+
+<button id="fs-btn" onclick="goFullscreen()">⛶ FULLSCREEN</button>
 
 <div class="container">
   <div class="left-panel">
@@ -322,6 +344,28 @@ const BUTTONS = [
 // ────────────────────────────────────────────────────────────────
 
 document.getElementById('ip-display').textContent = `${PC_HOST}:${PC_PORT}`;
+
+// Fullscreen
+function goFullscreen() {
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  if (req) {
+    req.call(el);
+    document.getElementById('fs-btn').classList.add('hidden');
+  }
+}
+
+// Show button again if fullscreen exits
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    document.getElementById('fs-btn').classList.remove('hidden');
+  }
+});
+document.addEventListener('webkitfullscreenchange', () => {
+  if (!document.webkitFullscreenElement) {
+    document.getElementById('fs-btn').classList.remove('hidden');
+  }
+});
 
 // Clock
 function updateClock() {
